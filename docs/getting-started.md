@@ -46,7 +46,7 @@ Une modification dans `packages/` est recompilée à la volée, mais les apps qu
 | gateway             | 3000                   | `GATEWAY_PORT`, et `VITE_API_URL` pour le front      |
 | user (gRPC)         | 50051                  | `USER_GRPC_PORT`, et `USER_GRPC_URL` pour la gateway |
 | recipe (gRPC)       | 50052                  | `RECIPE_GRPC_PORT`, et `RECIPE_GRPC_URL`             |
-| user-db / recipe-db | 27018 / 27019          | `USER_DB_PORT`, `RECIPE_DB_PORT` (Compose)           |
+| user-db / recipe-db | 27018 / 27019          | `USER_DB_PORT`, `RECIPE_DB_PORT` (Compose et apps)   |
 | redis               | 6379                   |                                                      |
 | nats                | 4222 (monitoring 8222) |                                                      |
 | fake-llm-api        | 4010                   | `PORT` dans le shell, et `LLM_BASE_URL`              |

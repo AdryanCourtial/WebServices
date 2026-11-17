@@ -1,8 +1,6 @@
 import type { Metadata } from '@grpc/grpc-js';
 import type { Observable } from 'rxjs';
 
-import type { Empty } from './empty.js';
-
 // TypeScript mirror of proto/recipe.proto (fields in camelCase, see the loader options)
 
 export const RECIPE_STATUSES = ['pending', 'done', 'failed'] as const;
@@ -18,6 +16,9 @@ export interface Recipe {
   steps: string[];
   title: string;
 }
+
+/** gRPC `Empty` message */
+export type Empty = Record<string, never>;
 
 export interface ListRecipesRequest {
   limit: number;

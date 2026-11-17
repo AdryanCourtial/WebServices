@@ -60,18 +60,20 @@ Version allégée, sans les améliorations de production :
 
 **Accroche** : « Une recette appartient à son auteur. Comment le recipe service sait-il qui fait la requête, alors que seule la gateway voit le token ? »
 
-**Notions** : contrat gRPC écrit par les étudiants, ressource REST `/recipes`, conversion des erreurs, identité propagée en metadata, autorisation par propriétaire, base dédiée.
+**Notions** : contrat gRPC écrit par les étudiants, métadonnées gRPC (identité propagée), ressource REST `/recipes`, authentification contre autorisation (401 / 403), autorisation par propriétaire dans le service qui détient la donnée, base dédiée.
 
-**Fourni** : le schéma `Recipe`, l'app recipe vide, `recipe-db` et ses fixtures, `requireUserId`.
+**Fourni** (`base-tp2` = correction du TP 1, plus) : l'app recipe connectée à `recipe-db` (schéma `Recipe`, sans route), `recipe-db` et ses fixtures, l'adresse du recipe service dans la config de la gateway.
 
-| Partie               | Durée  | Les étudiants                                                                                | Ils observent                              |
-| -------------------- | ------ | -------------------------------------------------------------------------------------------- | ------------------------------------------ |
-| 1. Le contrat        | 30 min | écrivent `recipe.proto` et ses interfaces TypeScript                                         |                                            |
-| 2. Le recipe service | 40 min | `ListRecipes`, `GetRecipe`, `CreateRecipe`, `DeleteRecipe`, `NOT_FOUND`, `PERMISSION_DENIED` |                                            |
-| 3. La ressource REST | 40 min | `GET`, `POST`, `DELETE` sur `/recipes`, metadata `x-user-id`, filtre complété (404, 403)     | Alice reçoit un 403 sur une recette de Bob |
-| 4. Bilan             | 10 min | checklist, questions                                                                         |                                            |
+| Partie               | Durée  | Les étudiants                                                                                                                  | Ils observent                                                                     |
+| -------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| 1. Le contrat        | 35 min | récupèrent `base-tp2`, écrivent `recipe.proto` d'après un cahier des charges, son miroir TypeScript, la métadonnée `x-user-id` | `pnpm typecheck` passe                                                            |
+| 2. Le recipe service | 35 min | serveur gRPC : `ListRecipes`, `GetRecipe`, `CreateRecipe`, `DeleteRecipe`, `NOT_FOUND`, `PERMISSION_DENIED`                    | le service écoute sur 50052                                                       |
+| 3. La ressource REST | 40 min | client gRPC, DTO, `GET`, `POST`, `DELETE` sur `/recipes` avec l'identité en metadata, filtre complété (404, 403)               | Alice reçoit un 403 sur une recette de Bob ; « par auteur inconnu » dans le front |
+| 4. Bilan             | 10 min | checklist, questions                                                                                                           |                                                                                   |
 
-**Bonus** : « Le front affiche l'auteur de chaque recette, mais le recipe service ne connaît que son id. Comment afficher son nom ? » → composition d'API, `GetUsers` en un seul appel.
+Le message `Recipe` du TP 2 n'a ni `description` ni `status` : le TP 3 les ajoute (numéros 7 et 8), une évolution compatible du contrat.
+
+**Bonus** : « Le front affiche "par auteur inconnu" : le recipe service ne connaît que l'id de l'auteur. Comment afficher son nom ? » → composition d'API, `GetUsers` en un seul appel. Puis : user service coupé, la liste tombe en 503.
 
 **Questions de réflexion**
 
@@ -87,14 +89,16 @@ Version allégée, sans les améliorations de production :
 
 **Fourni** : `@recipes/messaging`, les apps enricher et job runner configurées, le faux LLM, `buildPrompt`, le client LLM compatible OpenAI.
 
-| Partie           | Durée  | Les étudiants                                         | Ils observent                    |
-| ---------------- | ------ | ----------------------------------------------------- | -------------------------------- |
-| 1. Les contrats  | 15 min | types des événements et du job `llm`                  |                                  |
-| 2. Publier       | 20 min | statut `pending`, publication de `recipe.created`     | messages dans le monitoring NATS |
-| 3. L'enricher    | 25 min | consomme `recipe.created`, dépose un job `llm`        | le job attend dans Redis         |
-| 4. Le job runner | 25 min | processor BullMQ, appel au LLM, `text.generated`      | la file se vide                  |
-| 5. Le retour     | 25 min | `text.generated` → `recipe.enriched` → recette `done` | la description apparaît          |
-| 6. Casser        | 10 min | coupent l'enricher puis le job runner                 | rien n'est perdu                 |
+| Partie           | Durée  | Les étudiants                                                                 | Ils observent                    |
+| ---------------- | ------ | ----------------------------------------------------------------------------- | -------------------------------- |
+| 1. Les contrats  | 15 min | `description` et `status` dans `Recipe`, types des événements et du job `llm` |                                  |
+| 2. Publier       | 20 min | statut `pending`, publication de `recipe.created`                             | messages dans le monitoring NATS |
+| 3. L'enricher    | 25 min | consomme `recipe.created`, dépose un job `llm`                                | le job attend dans Redis         |
+| 4. Le job runner | 25 min | processor BullMQ, appel au LLM, `text.generated`                              | la file se vide                  |
+| 5. Le retour     | 25 min | `text.generated` → `recipe.enriched` → recette `done`                         | la description apparaît          |
+| 6. Casser        | 10 min | coupent l'enricher puis le job runner                                         | rien n'est perdu                 |
+
+À régler dans `base-tp3` : les recettes créées au TP 2 n'ont pas de `status` en base, et le défaut `pending` les ferait attendre indéfiniment.
 
 **Bonus** : « Avec `FAKE_FAILURE_RATE=0.3`, que deviennent les recettes concernées, et comment les sauver ? » → retries avec backoff dans les options du job, `text.failed` à la dernière tentative, statut `failed`.
 
@@ -111,6 +115,8 @@ Version allégée, sans les améliorations de production :
 - [x] Projet de référence allégé (`main`)
 - [x] Starter du TP 1 (`base-tp1`)
 - [x] Support du TP 1 : `courses/modules/DEVAPI/201-webservices/tp1`
-- [ ] TP 2 et TP 3 : à affiner après les retours sur le TP 1
+- [x] Starter du TP 2 (`base-tp2`, avec la correction du TP 1)
+- [x] Support du TP 2 : `courses/modules/DEVAPI/201-webservices/tp2`
+- [ ] TP 3
 
-La correction du TP 1 deviendra le starter du TP 2 (`base-tp2`).
+La correction du TP 2 deviendra le starter du TP 3 (`base-tp3`).

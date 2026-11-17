@@ -14,6 +14,7 @@ import { RecipesController } from './recipes/recipes.controller.js';
 @Module({
   controllers: [AuthController, HealthController, RecipesController],
   imports: [
+    // One gRPC client per service, each built from its own .proto
     ClientsModule.register([
       { name: USER_CLIENT, ...grpcOptions('user', config.userGrpcUrl) },
       { name: RECIPE_CLIENT, ...grpcOptions('recipe', config.recipeGrpcUrl) },

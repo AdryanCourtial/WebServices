@@ -13,9 +13,9 @@ import {
 } from '@recipes/contracts';
 import { requireUserId, rpcError } from '@recipes/contracts/grpc';
 import { MessagingService } from '@recipes/messaging';
-import { isValidObjectId, type Model } from 'mongoose';
+import { type HydratedDocument, isValidObjectId, type Model } from 'mongoose';
 
-import { Recipe, toDto } from './recipe.schema.js';
+import { Recipe } from './recipe.schema.js';
 
 @Controller()
 export class RecipeController {
@@ -29,6 +29,7 @@ export class RecipeController {
     request: CreateRecipeRequest,
     metadata: Metadata,
   ): Promise<RecipeDto> {
+    // The owner is the caller, as told by the gateway: never a field of the request
     const recipe = await this.recipes.create({
       ...request,
       ownerId: requireUserId(metadata),
@@ -62,6 +63,7 @@ export class RecipeController {
 
   @GrpcMethod('RecipeService', 'ListRecipes')
   async list({ limit }: ListRecipesRequest): Promise<ListRecipesResponse> {
+    // Latest first; 0 (the proto default) means "no preference", and 100 at most
     const recipes = await this.recipes
       .find()
       .sort({ createdAt: -1 })
@@ -70,10 +72,24 @@ export class RecipeController {
     return { recipes: recipes.map((recipe) => toDto(recipe)) };
   }
 
+  /** A malformed id is not found either: no CastError, no 500 */
   private async find(id: string) {
     const recipe = isValidObjectId(id) ? await this.recipes.findById(id) : null;
     if (!recipe) throw rpcError(status.NOT_FOUND, 'Recipe not found');
 
     return recipe;
   }
+}
+
+function toDto(recipe: HydratedDocument<Recipe>): RecipeDto {
+  return {
+    createdAt: recipe.createdAt.toISOString(),
+    description: recipe.description,
+    id: recipe.id,
+    ingredients: recipe.ingredients,
+    ownerId: recipe.ownerId,
+    status: recipe.status,
+    steps: recipe.steps,
+    title: recipe.title,
+  };
 }

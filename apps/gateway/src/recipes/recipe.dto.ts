@@ -8,6 +8,8 @@ import {
   Length,
 } from 'class-validator';
 
+// The owner is not a field: the gateway sends the caller's id in the metadata
+
 export class RecipeInputDto {
   /** @example Tarte aux pommes */
   @IsString()

@@ -1,11 +1,5 @@
-import type { HydratedDocument } from 'mongoose';
-
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import {
-  RECIPE_STATUSES,
-  type Recipe as RecipeDto,
-  type RecipeStatus,
-} from '@recipes/contracts';
+import { RECIPE_STATUSES, type RecipeStatus } from '@recipes/contracts';
 
 // Fields are filled by Mongoose, never by a constructor: hence the `!`
 @Schema({ timestamps: true })
@@ -19,6 +13,7 @@ export class Recipe {
   @Prop({ default: [], type: [String] })
   ingredients!: string[];
 
+  /** Id of the author in the user service: no join between two databases */
   @Prop({ index: true, required: true })
   ownerId!: string;
 
@@ -33,16 +28,3 @@ export class Recipe {
 }
 
 export const RecipeSchema = SchemaFactory.createForClass(Recipe);
-
-export function toDto(recipe: HydratedDocument<Recipe>): RecipeDto {
-  return {
-    createdAt: recipe.createdAt.toISOString(),
-    description: recipe.description,
-    id: recipe.id,
-    ingredients: recipe.ingredients,
-    ownerId: recipe.ownerId,
-    status: recipe.status,
-    steps: recipe.steps,
-    title: recipe.title,
-  };
-}
