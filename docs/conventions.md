@@ -5,7 +5,7 @@
 Workspaces pnpm :
 
 ```
-apps/       ce qui se lance : gateway, user, front
+apps/       ce qui se lance : gateway, user, recipe, front
 packages/   ce que les apps partagent : eslint, tsconfig, config, contracts
 docs/       cette documentation
 scripts/    génération de clé, smoke test
